@@ -6,6 +6,7 @@ pygame.display.set_caption('Flappy Bird')
 clock=pygame.time.Clock()
 WHITE=(255,255,255)
 RED=(255,0,0)
+BLUE=(0,0,255)
 x_bird=50
 y_bird=350
 tube1_x=400
@@ -22,19 +23,26 @@ gravity=0.5
 tube_velocity=2
 score=0
 font=pygame.font.SysFont('san',20)
+font1=pygame.font.SysFont('san',40)
+
 background_img=pygame.image.load("images/background.png")
 background_img=pygame.transform.scale(background_img,(400,600))
 bird_img=pygame.image.load("images/bird.png")
 bird_img=pygame.transform.scale(bird_img,(40,40))
 tube_op_img=pygame.image.load("images/tube_op.png")
 tube_img=pygame.image.load("images/tube.png")
+sound=pygame.mixer.Sound('no6.wav')
+sand_img=pygame.image.load("images/sand.png")
+sand_img=pygame.transform.scale(sand_img,(400,30))
 tube1_pass=False
 tube2_pass=False
 tube3_pass=False
+pausing=False
 
 
 running=True
 while running:
+    pygame.mixer.Sound.play(sound)
     clock.tick(60)
     screen.fill(WHITE)
     screen.blit(background_img,(0,0))
@@ -80,6 +88,9 @@ while running:
         tube3_pass=False
     
     
+    sand=screen.blit(sand_img,(0,570))
+    
+    
     bird=screen.blit(bird_img,(x_bird,y_bird))
     
     y_bird+=bird_drop_velocity
@@ -101,11 +112,18 @@ while running:
         tube3_pass=True
         
         
-tubes=[tube1.tube2,tube3,tube1_op,tube2_op,tube3_op]
-for tube in tubes:
-    if bird.collidedict(tube):
-        tube_velocity=0
-        bird_drop_velocity=0
+    tubes=[tube1,tube2,tube3,tube1_op,tube2_op,tube3_op,sand]
+    for tube in tubes:
+        if bird.colliderect(tube):
+            pygame.mixer.pause()
+            tube_velocity=0
+            bird_drop_velocity=0
+            game_over_txt=font1.render("Game over, Score:"+str(score),True,RED)
+            screen.blit(game_over_txt,(85,260))
+            space_txt=font.render("Press Space to continue!",True,BLUE)
+            screen.blit(space_txt,(120,290))
+            pausing=True
+        
         
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
@@ -114,6 +132,16 @@ for tube in tubes:
             if event.key==pygame.K_SPACE:
                 bird_drop_velocity=0
                 bird_drop_velocity=-7
+                if pausing:
+                    pygame.mixer.unpause()
+                    x_bird=50
+                    y_bird=350
+                    tube1_x=400
+                    tube2_x=600
+                    tube3_x=800
+                    tube_velocity=2
+                    score=0
+                    pausing=False
     pygame.display.flip()
 pygame.quit()
 
